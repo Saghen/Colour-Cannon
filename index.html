@@ -22,11 +22,16 @@
   <canvas id="canvas"></canvas>
 </body>
 <script>
-  let columns = 50;
-  let radius = 10;
-  let spawnRate = 1000 / 60;
+  let columns = 40;
+  let radius = 6;
+  let speed = 40;
+  let objectType = 'square';
+  let imagesCount = 200;
 </script>
+<script src="./chroma.min.js"></script>
 <script>
+  let circleImgs = [];
+
   let canvas = document.querySelector('#canvas');
   let context = canvas.getContext('2d');
 
@@ -64,20 +69,21 @@
     constructor(x) {
       this.x = x;
       this.y = canvas.height;
+      this.active = true;
       this.direction = [0, 0];
     }
 
     update() {
-      if (this.y > mousePos.y) {
+      if (this.y > mousePos.y + 20 && this.active) {
         let x = mousePos.x - this.x;
         let y = mousePos.y - this.y;
         let h = Math.sqrt(x ** 2 + y ** 2);
-
         this.direction = [x / h, y / h];
       }
+      else this.active = false;
 
-      this.x += this.direction[0] * 60;
-      this.y += this.direction[1] * 60;
+      this.x += this.direction[0] * speed;
+      this.y += this.direction[1] * speed;
     }
   }
 
@@ -111,30 +117,56 @@
     }
   }
 
+  let counter = 0;
+
   function drawCircles() {
+    if (counter > imagesCount) counter = 0;
     context.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = 0; i < circles.length; i++) {
       let circle = circles[i];
-      context.drawImage(circleImgs[Math.round(circle.y / canvas.height * 500)], circle.x, circle.y);
+
+      let index = Math.round(circle.y / canvas.height * imagesCount / 4) + counter;
+      if (index > imagesCount) index -= imagesCount;
+
+      context.drawImage(circleImgs[index], circle.x, circle.y);
     }
+    counter++;
   }
 
-  let circleImgs = [];
+  updateCircleImgs();
 
-  for (let i = 0; i < 501; i++) {
-    let m_canvas = document.createElement('canvas');
-    m_canvas.width = radius * 2;
-    m_canvas.height = radius * 2;
-    let m_context = m_canvas.getContext('2d');
-    m_context.beginPath();
-    m_context.arc(radius, radius, radius, 0, 2 * Math.PI, false);
-    m_context.fillStyle = `hsl(${360 / 501 * i},100%,50%)`;
-    m_context.fill();
-    m_context.closePath();
-    circleImgs.push(m_canvas);
+  function updateCircleImgs() {
+    circleImgs = [];
+
+    if (counter > imagesCount) counter = 0;
+
+    for (let i = 0; i <= imagesCount; i++) {
+      let m_canvas = document.createElement('canvas');
+      m_canvas.width = radius * 2;
+      m_canvas.height = radius * 2;
+      let m_context = m_canvas.getContext('2d');
+
+      m_context.beginPath();
+
+      if (objectType == 'circle') {
+        m_context.arc(radius, radius, radius, 0, 2 * Math.PI, false);
+      }
+      else if (objectType == 'square') {
+        m_context.rect(radius, radius, radius, radius);
+      }
+
+      m_context.fillStyle = `hsl(${360 / imagesCount * (i + counter)},100%,50%)`;
+      m_context.fill();
+      m_context.closePath();
+      circleImgs.push(m_canvas);
+    }
+
+    counter++;
   }
 
-  
+
+
+
 </script>
 
 </html>
