@@ -96,11 +96,12 @@
   window.addEventListener('mousemove', getMousePos);
 
   class Circle {
-    constructor(x) {
+    constructor(x, column) {
       this.x = x;
       this.y = canvas.height;
       this.active = true;
       this.direction = [0, 0];
+      this.column = column;
     }
 
     update() {
@@ -136,7 +137,7 @@
   function spawnCircles() {
     if (!mouseDown) return;
     for (let i = 0; i < columns; i++) {
-      circles.push(new Circle(canvas.width * i / columns));
+      circles.push(new Circle(canvas.width * i / columns, i));
     }
   }
 
@@ -155,8 +156,9 @@
     for (let i = 0; i < circles.length; i++) {
       let circle = circles[i];
 
-      let index = Math.round(circle.y / canvas.height * imagesCount / 4) + counter;
+      let index = Math.round(circle.y / canvas.height * imagesCount / 4 + counter - Math.abs(circle.column - columns / 2) * 1.5);
       if (index > imagesCount) index -= imagesCount;
+      if (index < 0) index += imagesCount;
 
       context.drawImage(circleImgs[index], circle.x, circle.y);
     }
